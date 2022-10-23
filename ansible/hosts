@@ -1,0 +1,9 @@
+[azurevms]
+# host ips
+HOST_IPS
+
+[azurevms:vars]
+ansible_user=superadmin
+ansible_password=s3cr3tP@55word
+ansible_connection=ssh
+ansible_port=22

@@ -1,0 +1,45 @@
+---
+- hosts: azurevms
+    gather_facts: no
+    become: yes
+    vars:
+    server_name: ""
+    document_root: /var/www
+    app_root: website
+    tasks:
+    - name: Update apt cache and install Nginx
+        apt:
+        name: nginx
+        state: latest
+        update_cache: yes
+
+    - name: Copy website files to the server's document root
+        copy:
+        src: "{{ app_root }}"
+        dest: "{{ document_root }}"
+        mode: preserve
+
+    - name: Apply Nginx template
+        template:
+        src: nginx/nginx.conf
+        dest: /etc/nginx/sites-available/default
+        notify: Restart Nginx
+
+    - name: Enable new site
+        file:
+        src: /etc/nginx/sites-available/default
+        dest: /etc/nginx/sites-enabled/default
+        state: link
+        notify: Restart Nginx
+
+    - name: Allow all access to tcp port 80
+        ufw:
+        rule: allow
+        port: '80'
+        proto: tcp
+
+    handlers:
+    - name: Restart Nginx
+        service:
+        name: nginx
+        state: restarted
